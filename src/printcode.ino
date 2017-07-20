@@ -3,6 +3,7 @@
 // Copyright (C) 2017 Embecosm Limited <www.embecosm.com>
 
 // Contributor: Peter Bennett <peter.bennett@embecosm.com>
+// Contributor: Dan Gorringe <dan.gorringe@embecosm.com>
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -37,9 +38,13 @@ Adafruit_Thermal printer(&mySerial);     // Pass addr to printer constructor
 
 int led = 13;
 
-// How many bit rows to print
+  // How many bit rows to print
 
-static const int MAX_ROWS = 1400;
+  static const int MAX_ROWS = 1400;
+
+// How many orders to print
+
+static const int MAX_ORDERS = 14;
 
 // Which row are we one
 
@@ -56,6 +61,8 @@ static const int HOLE_OFF    = 61;                      // Offset to next hole
 static const int HOLE_WIDTH  = 50;
 
 void setup() {
+
+   Serial.begin(9600);
 
   // initialize the digital pin as an output.
   pinMode(led, OUTPUT);
@@ -76,7 +83,7 @@ void setup() {
 
 // Print a 5 hole row
 
-// Holes go at 50-90 and then 61 bits on.
+// Holes go at 49-99 and then 61 bits on from the centre at 74.
 
 static void
 print5Holes (uint8_t bits)
@@ -98,17 +105,17 @@ print5Holes (uint8_t bits)
       // Set all the pixels of this hole if enabled, just a thin line
       // otherwise.
 
-      int w = data[i] ? HOLE_WIDTH : 2;
+      int w = data[i] ? HOLE_WIDTH : 2;               // If data[i] is true w = HOLE_WIDTH else w = 2
       int pixel = HOLE_START - w / 2 + i * HOLE_OFF;
 
       for (int j = pixel; j < pixel + w; j++)
-	{
-	  int ibyte = j / 8;            // Which byte to modify
-	  int ibit  = j % 8;            // Which bit within the byte
-	  uint8_t x = 0x80 >> ibit;     // The modified byte
+        {
+          int ibyte = j / 8;            // Which byte to modify
+          int ibit  = j % 8;            // Which bit within the byte
+          uint8_t x = 0x80 >> ibit;     // The modified byte
 
-	  row[ibyte] |= x;              // OR the byte into the row
-	}
+          row[ibyte] |= x;              // OR the byte into the row
+        }
     }
 
   // Print the completed line. FALSE says data mem, not code mem
@@ -121,30 +128,33 @@ print5Holes (uint8_t bits)
     }
 }       // print5Holes ();
 
+// Recieve data over serial and print if you do not recieve another number
 
-void
-loop()
-{
-  digitalWrite (led, HIGH);
+int incomingByte = 0;
+int integerValue = 0;
 
-  print5Holes (random (0, 31));
-  print5Holes (0);
 
-  if (rowNum >= MAX_ROWS) {
-
-    // Finish printing and loop forever. Once we get here we will
-    // never stop.
-
-    printer.feed (5);                 // Feed out some paper
-    printer.sleep ();
-    delay (3000L);
-    printer.wake ();
-    printer.setDefault ();
-
-   // Wait for ever
-
-   while (true)
-     ;
+void loop() {
+  // send data only when you receive data:
+  if (Serial.available() > 0) {
+    // read the incoming byte:
+    incomingByte = Serial.read();
+    // Print back for debugging
+    Serial.print("IncomingByte is: ");
+    Serial.println((incomingByte), DEC);
+    // If an ascii number increment the integer value
+    if (incomingByte > 47){
+      Serial.print("Incrementing integer Value");
+      integerValue = (integerValue * 10) + (incomingByte - 48);
+      Serial.print("integer is now:");
+      Serial.println((integerValue), DEC);
+    }
+    // If not a number inputted then print out the order
+    else{
+    Serial.print("Printing:");
+    Serial.println((integerValue), DEC);
+    print5Holes(integerValue);
+    integerValue = 0;
+    }
   }
 }
-
