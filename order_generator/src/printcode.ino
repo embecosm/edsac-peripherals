@@ -60,6 +60,12 @@ static const int HOLE_START  = 74;                      // Center of first hole
 static const int HOLE_OFF    = 61;                      // Offset to next hole
 static const int HOLE_WIDTH  = 50;
 
+// For recieving over serial
+
+
+int incomingByte;
+int integerValue;
+
 void setup() {
 
    Serial.begin(9600);
@@ -78,6 +84,8 @@ void setup() {
   printer.begin();        // Init printer (same regardless of serial type)
 
   rowNum = 0;           // Next row to print
+  incomingByte = 0;
+  integerValue = 0;
 }
 
 
@@ -130,10 +138,6 @@ print5Holes (uint8_t bits)
 
 // Recieve data over serial and print if you do not recieve another number
 
-int incomingByte = 0;
-int integerValue = 0;
-
-
 void loop() {
   // send data only when you receive data:
   if (Serial.available() > 0) {
@@ -154,6 +158,7 @@ void loop() {
     Serial.print("Printing:");
     Serial.println((integerValue), DEC);
     print5Holes(integerValue);
+    print5Holes(0);
     integerValue = 0;
     }
   }
