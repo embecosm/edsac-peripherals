@@ -3,7 +3,7 @@ The code to work the EDSAC simulating tape reader stop waiting for me dan
  */
 #include <math.h>
 
-int sensorPin[05] = {A4,A3,A2,A1,A0};
+int sensorPin[05] = {A4,A3,A2,A1,A0}; //pins for the analog ins
 int ledPin = 13;      // select the pin for the LED
 int sensorValue[05];
 int oldValue[05];
@@ -16,7 +16,7 @@ double oldestResponse = 0;
 double currentResponse = 0;
 
 void setup() {
-  // declare the ledPin as an OUTPUT:
+  // declare the ledPin for the green leds as an OUTPUT:
   pinMode(ledPin, OUTPUT); 
   Serial.begin(9600); 
 }
@@ -33,7 +33,7 @@ void loop() {
     oldValue[i] = sensorValue[i];
     sensorValue[i] = analogRead(sensorPin[i]);
   };
-  //make any changes to the bits
+  //make any changes to the bits if they have changed by a significant amount recently
   for (j = 0; j < 5; j++){
     if(sensorValue[j] < oldestValue[j] - 25){
       bits[j] = 1;
@@ -49,6 +49,7 @@ void loop() {
   if(currentResponse == olderResponse){
   }
   else{
+    //[rint the number in binary
     Serial.print("Binary: ");
     Serial.print(bits[4]);
     Serial.print(bits[3]);
@@ -56,13 +57,16 @@ void loop() {
     Serial.print(bits[1]);
     Serial.print(bits[0]);
     Serial.print("    Actual value: ");
+    //get the right number of spaces so the next bit lines up
     if(currentResponse < 10){
       Serial.print(" ");
     };
+    //print the decimal value
     Serial.print(currentResponse);
     Serial.print("    Differences: ");
     int k = 0;
     for (k=0; k<5; k++){
+      //work out the right number of spaces for each difference
       if (sensorValue[k] - oldestValue[k] < -99.5){
         Serial.print(" ");
       }
@@ -81,11 +85,13 @@ void loop() {
       else{
         Serial.print("  ");
       };
+      //print those differences
       Serial.print(sensorValue[k] - oldestValue[k]);
     };
+    //new line and carriage return
     Serial.println();
   };
-  // turn the ledPin on
+  // turn the leds on so we can see the dots
   digitalWrite(ledPin, HIGH);  
   delay(30);                  
 }
