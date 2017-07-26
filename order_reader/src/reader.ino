@@ -41,14 +41,17 @@ void loop() {
   int p = 0;
   for (p = 0; p < 5; p++){
     difference[p] = sensorValue[0][p] - sensorValue[m][p];
+    //difference is NEGATIVE if you are entering a darker area
   };
   //make any changes to the bits if they have changed by a significant amount recently
   for (j = 0; j < 5; j++){
     if(difference[j] < - threshold){
+      //a dark dot signifies a 1
       bits[j] = 1;
       bitsValue[j] = pow(2,j);
     }
     else if(difference[j] > + threshold){
+      //no dot is a 0
       bits[j] = 0;
       bitsValue[j] = 0;
     };
