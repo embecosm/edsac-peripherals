@@ -74,26 +74,26 @@ void loop() {
     int k = 0;
     for (k=0; k<5; k++){
       //work out the right number of spaces for each difference so they line up and are easy to read
-      if (sensorValue[0][k] - sensorValue[m][k] < -99.5){
+      if (difference[k] < -99.5){
         Serial.print(" ");
       }
-      else if (sensorValue[0][k] - sensorValue[m][k] < -9.5){
+      else if (difference[k] < -9.5){
         Serial.print("  ");
       }
-      else if (sensorValue[0][k] - sensorValue[m][k] < -0.5){
+      else if (difference[k] < -0.5){
         Serial.print("   ");
       }
-      else if (sensorValue[0][k] - sensorValue[m][k] < 9.5){
+      else if (difference[k] < 9.5){
         Serial.print("    ");
       }
-      else if (sensorValue[0][k] - sensorValue[m][k] < 99.5){
+      else if (difference[k] < 99.5){
         Serial.print("   ");
       }
       else{
         Serial.print("  ");
       };
       //print those differences
-      Serial.print(sensorValue[0][k] - sensorValue[m][k]);
+      Serial.print(difference[k]);
     };
     //new line and carriage return
     Serial.println();
