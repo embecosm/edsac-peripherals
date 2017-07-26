@@ -50,7 +50,7 @@ void loop() {
   if(response[0] == response[1]){
   }
   else{
-    //[rint the number in binary
+    //print the number in binary
     Serial.print("Binary: ");
     Serial.print(bits[4]);
     Serial.print(bits[3]);
