@@ -12,6 +12,7 @@ int readtime = 40;
 int m = 2;
 double bitsValue[05];
 double response[20];
+int difference[05];
 
 void setup() {
   // declare the ledPin for the green leds as an OUTPUT:
@@ -45,18 +46,20 @@ void loop() {
       bitsValue[j] = 0;
     };
   }
-
+  int p = 0;
+  for (p = 0; p < 5; p++){
+    difference[p] = sensorValue[0][p] - sensorValue[m][p];
+  };
   response[0] = bitsValue[0] + bitsValue[1] + bitsValue[2] + bitsValue[3] + bitsValue[4];
   if(response[0] == response[1]){
   }
   else{
     //print the number in binary
     Serial.print("Binary: ");
-    Serial.print(bits[4]);
-    Serial.print(bits[3]);
-    Serial.print(bits[2]);
-    Serial.print(bits[1]);
-    Serial.print(bits[0]);
+    int q = 0; 
+    for (q = 4; q > -1; q--){
+      Serial.print (bits[q]);
+    };
     Serial.print("    Actual value: ");
     //get the right number of spaces so the next bit lines up
     if(response[0] < 10){
