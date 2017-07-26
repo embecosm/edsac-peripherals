@@ -5,15 +5,13 @@ The code to work the EDSAC simulating tape reader stop waiting for me dan
 
 int sensorPin[05] = {A4,A3,A2,A1,A0}; //pins for the analog ins
 int ledPin = 13;      // select the pin for the LED
-int sensorValue[05];
-int oldValue[05];
-int olderValue[05];
-int oldestValue[05];
+int sensorValue[20][05];
 int bits[05];
+//x value of old read
+int readtime = 40;
+int m = 2;
 double bitsValue[05];
-double olderResponse = 0;
-double oldestResponse = 0;
-double currentResponse = 0;
+double response[20];
 
 void setup() {
   // declare the ledPin for the green leds as an OUTPUT:
@@ -25,28 +23,31 @@ void loop() {
   // shift everything about:
   int i = 0;
   int j = 0;
-  oldestResponse = olderResponse;
-  olderResponse = currentResponse;
+  int n = 0;
+  for (n = 19; n > 0; n--){
+    response[n] = response[n-1];
+  };
   for (i = 0; i < 5; i++){
-    oldestValue[i] = olderValue[i];
-    olderValue[i]  = oldValue[i];
-    oldValue[i] = sensorValue[i];
-    sensorValue[i] = analogRead(sensorPin[i]);
+    int l = 0;
+    for (l = 19; l > -1; l--){
+      sensorValue[l][i] = sensorValue[l-1][i];
+    };
+    sensorValue[0][i] = analogRead(sensorPin[i]);
   };
   //make any changes to the bits if they have changed by a significant amount recently
   for (j = 0; j < 5; j++){
-    if(sensorValue[j] < oldestValue[j] - 25){
+    if(sensorValue[0][j] < sensorValue[m][j] - 25){
       bits[j] = 1;
-      bitsValue[j] = pow( 2 ,  j);
+      bitsValue[j] = pow(2,j);
     }
-    else if(sensorValue[j] < oldestValue[j] + 25){
+    else if(sensorValue[0][j] < sensorValue[m][j] + 25){
       bits[j] = 0;
       bitsValue[j] = 0;
     };
   }
 
-  currentResponse = bitsValue[0] + bitsValue[1] + bitsValue[2] + bitsValue[3] + bitsValue[4];
-  if(currentResponse == olderResponse){
+  response[0] = bitsValue[0] + bitsValue[1] + bitsValue[2] + bitsValue[3] + bitsValue[4];
+  if(response[0] == response[1]){
   }
   else{
     //[rint the number in binary
@@ -58,40 +59,40 @@ void loop() {
     Serial.print(bits[0]);
     Serial.print("    Actual value: ");
     //get the right number of spaces so the next bit lines up
-    if(currentResponse < 10){
+    if(response[0] < 10){
       Serial.print(" ");
     };
     //print the decimal value
-    Serial.print(currentResponse);
+    Serial.print(response[0]);
     Serial.print("    Differences: ");
     int k = 0;
     for (k=0; k<5; k++){
-      //work out the right number of spaces for each difference
-      if (sensorValue[k] - oldestValue[k] < -99.5){
+      //work out the right number of spaces for each difference so they line up and are easy to read
+      if (sensorValue[0][k] - sensorValue[m][k] < -99.5){
         Serial.print(" ");
       }
-      else if (sensorValue[k] - oldestValue[k] < -9.5){
+      else if (sensorValue[0][k] - sensorValue[m][k] < -9.5){
         Serial.print("  ");
       }
-      else if (sensorValue[k] - oldestValue[k] < -0.5){
+      else if (sensorValue[0][k] - sensorValue[m][k] < -0.5){
         Serial.print("   ");
       }
-      else if (sensorValue[k] - oldestValue[k] < 9.5){
+      else if (sensorValue[0][k] - sensorValue[m][k] < 9.5){
         Serial.print("    ");
       }
-      else if (sensorValue[k] - oldestValue[k] < 99.5){
+      else if (sensorValue[0][k] - sensorValue[m][k] < 99.5){
         Serial.print("   ");
       }
       else{
         Serial.print("  ");
       };
       //print those differences
-      Serial.print(sensorValue[k] - oldestValue[k]);
+      Serial.print(sensorValue[0][k] - sensorValue[m][k]);
     };
     //new line and carriage return
     Serial.println();
   };
   // turn the leds on so we can see the dots
   digitalWrite(ledPin, HIGH);  
-  delay(30);                  
+  delay(readtime/m);                  
 }
