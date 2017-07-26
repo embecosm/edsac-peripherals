@@ -12,15 +12,15 @@ int readtime = 40;
 //difference required over period to be cosidered significant
 int sensitivity = 25;
 //x value of old read
-int m = 2;
+int m = 10;
 double bitsValue[05];
 double response[20];
 int difference[05];
 
 void setup() {
   // declare the ledPin for the green leds as an OUTPUT:
-  pinMode(ledPin, OUTPUT); 
-  Serial.begin(9600); 
+  pinMode(ledPin, OUTPUT);
+  Serial.begin(9600);
 }
 
 void loop() {
@@ -59,13 +59,13 @@ void loop() {
   else{
     //print the number in binary
     Serial.print("Binary: ");
-    int q = 0; 
+    int q = 0;
     for (q = 4; q > -1; q--){
       Serial.print (bits[q]);
     };
     Serial.print("    Actual value: ");
     //get the right number of spaces so the next bit lines up
-    if(response[0] < 10){
+    if(response[0] < 9.5){
       Serial.print(" ");
     };
     //print the decimal value
@@ -99,6 +99,6 @@ void loop() {
     Serial.println();
   };
   // turn the leds on so we can see the dots
-  digitalWrite(ledPin, HIGH);  
-  delay(readtime/m);                  
+  digitalWrite(ledPin, HIGH);
+  delay(readtime/m);
 }
