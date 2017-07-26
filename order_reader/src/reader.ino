@@ -7,8 +7,11 @@ int sensorPin[05] = {A4,A3,A2,A1,A0}; //pins for the analog ins
 int ledPin = 13;      // select the pin for the LED
 int sensorValue[20][05];
 int bits[05];
-//x value of old read
+//length of change measuring period
 int readtime = 40;
+//difference required over period to be cosidered significant
+int sensitivity = 25;
+//x value of old read
 int m = 2;
 double bitsValue[05];
 double response[20];
@@ -35,21 +38,21 @@ void loop() {
     };
     sensorValue[0][i] = analogRead(sensorPin[i]);
   };
-  //make any changes to the bits if they have changed by a significant amount recently
-  for (j = 0; j < 5; j++){
-    if(sensorValue[0][j] < sensorValue[m][j] - 25){
-      bits[j] = 1;
-      bitsValue[j] = pow(2,j);
-    }
-    else if(sensorValue[0][j] < sensorValue[m][j] + 25){
-      bits[j] = 0;
-      bitsValue[j] = 0;
-    };
-  }
   int p = 0;
   for (p = 0; p < 5; p++){
     difference[p] = sensorValue[0][p] - sensorValue[m][p];
   };
+  //make any changes to the bits if they have changed by a significant amount recently
+  for (j = 0; j < 5; j++){
+    if(difference[j] < - sensitivity){
+      bits[j] = 1;
+      bitsValue[j] = pow(2,j);
+    }
+    else if(difference[j] > + sensitivity){
+      bits[j] = 0;
+      bitsValue[j] = 0;
+    };
+  }
   response[0] = bitsValue[0] + bitsValue[1] + bitsValue[2] + bitsValue[3] + bitsValue[4];
   if(response[0] == response[1]){
   }
