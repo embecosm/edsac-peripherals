@@ -10,7 +10,7 @@ int bits[05];
 //length of change measuring period
 int readtime = 40;
 //difference required over period to be cosidered significant
-int sensitivity = 25;
+int threshold = 20;
 //x value of old read
 int m = 10;
 double bitsValue[05];
@@ -28,8 +28,8 @@ void loop() {
   int i = 0;
   int j = 0;
   int n = 0;
+  response[n] = response[n-1];
   for (n = 19; n > 0; n--){
-    response[n] = response[n-1];
   };
   for (i = 0; i < 5; i++){
     int l = 0;
@@ -44,11 +44,11 @@ void loop() {
   };
   //make any changes to the bits if they have changed by a significant amount recently
   for (j = 0; j < 5; j++){
-    if(difference[j] < - sensitivity){
+    if(difference[j] < - threshold){
       bits[j] = 1;
       bitsValue[j] = pow(2,j);
     }
-    else if(difference[j] > + sensitivity){
+    else if(difference[j] > + threshold){
       bits[j] = 0;
       bitsValue[j] = 0;
     };
