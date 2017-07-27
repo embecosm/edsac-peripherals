@@ -1,5 +1,5 @@
 /*
-The code to work the EDSAC simulating tape reader stop waiting for me dan
+The code to work the EDSAC simulating tape reader
  */
 #include <math.h>
 
@@ -24,7 +24,7 @@ void setup() {
 }
 
 void loop() {
-  // shift everything about:
+  // Assign the 0th place to be the most recent, and move everything up one on each new reading
   int i = 0;
   int j = 0;
   int n = 0;
@@ -36,8 +36,10 @@ void loop() {
     for (l = 19; l > -1; l--){
       sensorValue[l][i] = sensorValue[l-1][i];
     };
+    // Read the value of the sensor and put in sensorValue[0]
     sensorValue[0][i] = analogRead(sensorPin[i]);
   };
+  // Read the difference between the latest reading and the mth value
   int p = 0;
   for (p = 0; p < 5; p++){
     difference[p] = sensorValue[0][p] - sensorValue[m][p];
@@ -51,15 +53,16 @@ void loop() {
       bitsValue[j] = pow(2,j);
     }
     else if(difference[j] > + threshold){
-      //no dot is a 0
+      //If there is no do, assign the bit to a 0
       bits[j] = 0;
       bitsValue[j] = 0;
     };
   }
+
+  // Create a quasi response, e.g. add up all the values of each reading to create a decimal number
   response[0] = bitsValue[0] + bitsValue[1] + bitsValue[2] + bitsValue[3] + bitsValue[4];
-  if(response[0] == response[1]){
-  }
-  else{
+
+  if(response[0] != response[1]){
     //print the number in binary
     Serial.print("Binary: ");
     int q = 0;
@@ -97,11 +100,12 @@ void loop() {
       };
       //print those differences
       Serial.print(difference[k]);
-    };
+    }; // Just printing nicities
     //new line and carriage return
     Serial.println();
   };
-  // turn the leds on so we can see the dots
+
+  // turn on the leds to reflect off the orders
   digitalWrite(ledPin, HIGH);
   delay(readtime/m);
 }
