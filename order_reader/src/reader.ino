@@ -30,7 +30,7 @@ int threshold = 20;
 //x value of old read
 int m = 10;
 double bitsValue[05];
-double response[20];
+int response[20];
 int difference[05];
 
 void setup() {
