@@ -69,7 +69,7 @@ void loop() {
       bitsValue[j] = pow(2,j);
     }
     else if(difference[j] > + threshold){
-      //If there is no do, assign the bit to a 0
+      //If there is no dot, assign the bit to a 0
       bits[j] = 0;
       bitsValue[j] = 0;
     };
