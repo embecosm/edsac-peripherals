@@ -1,6 +1,7 @@
 /*
 The code to work the EDSAC simulating tape reader
 Copyright (C) 2017  Embecosm Ltd
+Contributor: Peter Bennett <peter.bennett@embecosm.com>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
