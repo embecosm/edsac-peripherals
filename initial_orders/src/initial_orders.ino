@@ -18,25 +18,41 @@ Adafruit_MCP23017 mcp2;
 Adafruit_MCP23017 mcp1;
 
 void setup() {
+  const int Bin1 = 11; //These are all identifying the binary inputs of
+  const int Bin2 = 8; //the 4511 Seven Segment Decoder
+  const int Bin3 = 9;
+  const int Bin4 = 10;
+  const int Bin5 = 15; //These are all identifying the binary inputs of
+  const int Bin6 = 12; //the 4511 Seven Segment Decoder
+  const int Bin7 = 13;
+  const int Bin8 = 14;
   mcp1.begin(1);      // use default address 0
   mcp2.begin(0);      // use default address 0
-  mcp1.pinMode( 0, INPUT);
-  mcp1.pinMode( 1, INPUT);
-  mcp1.pinMode( 2, INPUT);
-  mcp1.pinMode( 3, INPUT);
-  mcp1.pinMode( 4, INPUT);
-  mcp1.pinMode( 5, INPUT);
-  mcp1.pinMode( 6, INPUT);
-  mcp1.pinMode( 7, INPUT);
-  mcp1.pinMode( 8, INPUT);
-  mcp1.pinMode( 9, INPUT);
-  mcp1.pinMode(10, INPUT);
-  mcp1.pinMode(11, INPUT);
-  mcp1.pinMode(12, INPUT);
-  mcp1.pinMode(13, INPUT);
-  mcp1.pinMode(14, INPUT);
-  mcp1.pinMode(15, INPUT);
-  mcp2.pinMode( 2, INPUT);
+  mcp1.pinMode( 0,  INPUT);
+  mcp1.pinMode( 1,  INPUT);
+  mcp1.pinMode( 2,  INPUT);
+  mcp1.pinMode( 3,  INPUT);
+  mcp1.pinMode( 4,  INPUT);
+  mcp1.pinMode( 5,  INPUT);
+  mcp1.pinMode( 6,  INPUT);
+  mcp1.pinMode( 7,  INPUT);
+  mcp1.pinMode( 8,  INPUT);
+  mcp1.pinMode( 9,  INPUT);
+  mcp1.pinMode(10,  INPUT);
+  mcp1.pinMode(11,  INPUT);
+  mcp1.pinMode(12,  INPUT);
+  mcp1.pinMode(13,  INPUT);
+  mcp1.pinMode(14,  INPUT);
+  mcp1.pinMode(15,  INPUT);
+  mcp2.pinMode( 2,  INPUT);
+  mcp2.pinmode(Bin1, OUTPUT);
+  mcp2.pinmode(Bin2, OUTPUT);
+  mcp2.pinmode(Bin3, OUTPUT);
+  mcp2.pinmode(Bin4, OUTPUT);
+  mcp2.pinmode(Bin5, OUTPUT);
+  mcp2.pinmode(Bin6, OUTPUT);
+  mcp2.pinmode(Bin7, OUTPUT);
+  mcp2.pinmode(Bin8, OUTPUT);
   pinMode(13, OUTPUT);  // use the p13 LED as debugging
   pinMode(12, OUTPUT);
   Serial.begin(9600);
@@ -100,6 +116,14 @@ void loop() {
       Serial.println();
       Serial.print(x);
       Serial.println();
+      mcp2.digitalWrite(Bin1, B0); //Write "8" to the tens display
+      mcp2.digitalWrite(Bin2, B0);
+      mcp2.digitalWrite(Bin3, B0);
+      mcp2.digitalWrite(Bin4, B1);
+      mcp2.digitalWrite(Bin5, B0); //Write "8" to the units display
+      mcp2.digitalWrite(Bin6, B0);
+      mcp2.digitalWrite(Bin7, B0);
+      mcp2.digitalWrite(Bin8, B1);
       x++ ;
       delay(100);
     }
