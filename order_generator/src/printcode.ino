@@ -56,7 +56,7 @@ static const int PIXEL_WIDTH = 384;
 
 // Constants for holes
 
-static const int HOLE_START  = 74;                      // Center of first hole
+static const int HOLE_START  = 44;                      // Center of first hole
 static const int HOLE_OFF    = 61;                      // Offset to next hole
 static const int HOLE_WIDTH  = 50;
 
@@ -81,16 +81,16 @@ void setup() {
 }
 
 
-// Print a 5 hole row
+// Print a 6 hole row
 
 // Holes go at 49-99 and then 61 bits on from the centre at 74.
 
 static void
-print5Holes (uint8_t bits)
+print6Holes (uint8_t bits)
 {
   bool data[5];                                 // Easier to have a vector
 
-  for (int i = 0; i < 5; i++)
+  for (int i = 0; i < 6; i++)
     data[i] = (bits >> i & 1) == 1;
 
 
@@ -98,14 +98,22 @@ print5Holes (uint8_t bits)
 
   memset (row, 0, PIXEL_WIDTH / 8);     // Clear all the bits
 
-  // Print 5 holes
+  // Print 6 holes
 
-  for(int i = 0; i < 5; i++)
+  for(int i = 0; i < 6; i++)
     {
-      // Set all the pixels of this hole if enabled, just a thin line
+      // Set all the pixels of this hole if enabled, or if 3, just a thin line
       // otherwise.
-
-      int w = data[i] ? HOLE_WIDTH : 2;               // If data[i] is true w = HOLE_WIDTH else w = 2
+      int w=44;                                         //creating w
+      if(i == 3){
+        w = HOLE_WIDTH;                             //creating the clock line
+      }
+      else if (i < 3){
+        w = data[i] ? HOLE_WIDTH : 2;               // If data[i] is true w = HOLE_WIDTH else w = 2
+      }
+      else{
+        w = data[i-1] ? HOLE_WIDTH : 2;               // If data[i] is true w = HOLE_WIDTH else w = 2
+      };
       int pixel = HOLE_START - w / 2 + i * HOLE_OFF;
 
       for (int j = pixel; j < pixel + w; j++)
@@ -126,7 +134,7 @@ print5Holes (uint8_t bits)
       rowNum++;
       printer.printBitmap(PIXEL_WIDTH, 1, row, false);
     }
-}       // print5Holes ();
+}       // print6Holes ();
 
 // Recieve data over serial and print if you do not recieve another number
 
@@ -153,7 +161,7 @@ void loop() {
     else{
     Serial.print("Printing:");
     Serial.println((integerValue), DEC);
-    print5Holes(integerValue);
+    print6Holes(integerValue);
     integerValue = 0;
     }
   }
