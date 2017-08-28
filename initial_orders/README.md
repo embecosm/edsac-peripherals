@@ -1,12 +1,12 @@
 # Instructions for building
-This is the part which allows the initial orders to be loaded on to the EDSAC implementation for MyStorm BlackIce
+This is the part which allows the initial orders to be manually loaded on to the EDSAC implementation for MyStorm BlackIce
 ## Bill of materials
 _Links provided are from suggested suppliers, other suppliers may exist\._
 _Designs for 3D printed parts can be found in this repository\._ 
 * 3D printed parts
- * Body
- * Solder board holder
- * Header bar
+  * Body
+  * Solder board holder
+  * Header bar
 * [USB to UART adapter \(May require cables and/or headers depending on spec\)](www.amazon.co.uk/UART-CP2102-Module-Serial-Converter/dp/B00AFRXKFU)
 * [ATMega 328P-PU \(DIP\)](uk.farnell.com/microchip/atmega328p-pu/mcu-8bit-atmega-20mhz-dip-28/dp/1715487)
 * [Microchip MCP23017 \(DIP\)](uk.farnell.com/microchip/mcp23017-e-sp/ic-io-expander-16bit-i2c-28dip/dp/1332088)
