@@ -27,8 +27,8 @@ _Designs for 3D printed parts can be found in this repository\._
 * [3x lipped 5mm LED \(color of your choice\)](uk.farnell.com/multicomp/703-0097/led-5mm-green-150mcd-572nm/dp/2112108)
 * [2x HDSP-C3x3 7 segment displays \(color of your choice\)](uk.farnell.com/broadcom-limited/hdsp-c3e3/led-display-9-1mm-red-cc/dp/1830006)
 * [2x 4511 7 segment decoder](uk.farnell.com/texas-instruments/cd4511be/4000-cmos-4511-dip16-18v/dp/1106122)
-* [Solderable circuit board](MC01010 cpc.farnell.com/multicomp/mc01010/circuit-board-95x72-780-ic-board/dp/PC01289)
+* [Solderable circuit board MC01010](cpc.farnell.com/multicomp/mc01010/circuit-board-95x72-780-ic-board/dp/PC01289)
 * [2x M3x20 hex head bolt](uk.rs-online.com/web/p/socket-screws/4733530/)
-* [4x M3x8 hex head bolt])uk.rs-online.com/web/p/socket-screws/4679789/)
+* [4x M3x8 hex head bolt](uk.rs-online.com/web/p/socket-screws/4679789/)
 * [6x M3 nut](uk.rs-online.com/web/p/hex-nuts/1224400/)
 
