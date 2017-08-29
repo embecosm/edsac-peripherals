@@ -1,5 +1,5 @@
 # Instructions for building
-This is the part which allows the tape orders to be rwd by the EDSAC implementation for MyStorm BlackIce
+This is the part which allows the tape orders to be read by the EDSAC implementation for MyStorm BlackIce
 ## Bill of materials
 _Links provided are from suggested suppliers, other suppliers may exist\._
 _Designs for 3D printed parts can be found in this repository\._ 
