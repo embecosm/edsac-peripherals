@@ -1,2 +1,2 @@
 # edsac-peripherals
-Individual parts have their own readmes where you can find bills of materials and suggested suppliers\.
+Individual parts have their own readmes where you can find bills of materials and suggested suppliers, however all parts need wire, which can be purchased  at a large selection of [online](http://uk.farnell.com/c/cable-wire-cable-assemblies/hook-up-wire-single-conductor?wire-gauge=22awg) and [nationanl chain](https://www.maplin.co.uk/p/maplin-06-mm-solid-copper-core-22-awg-2-amp-bell-wire-10m-black-bl85g) retailers.\.
