@@ -7,25 +7,29 @@
 //You should have received a copy of the license along with this
 //work. If not, see <http://creativecommons.org/licenses/by-sa/4.0/>.
 
-rotate([180,0,0]){
+//rotate([180,0,0]){
     difference(){
         union(){
             difference(){
                 //motor holster shenanigans
-                translate([50,25,-4.75])
-                    cube([29,25,13.5],center=true);
+                translate([50,25,-5.75])
+                    cube([29,25,15.5],center=true);
                 translate([45,20.5,-0.75])
                     cube([13,25,11],center=true); 
                 translate([33.75,36,0])
                     cube([12,10,14],center=true);
-                translate([35.75,36,-2])
-                    cube([16,10,10],center=true);
+                translate([37.75,36,-2])
+                    cube([20,10,10],center=true);
+                translate([45,0,-10])
+                    cube([6.2,58,3],center=true);
+                translate([45,23,-10])
+                    cylinder(r=1.8, h=10, $fn=60, center=true);
             };
             difference(){
                 //main body
                 union(){
-                    translate([45,0,-2])
-                        cube([120,86,19],center=true);
+                    translate([45,0,-3])
+                        cube([120,86,21],center=true);
                 };
                 //motor hole
                 translate([45,20.5,-0.75])
@@ -52,8 +56,8 @@ rotate([180,0,0]){
                     cube([12,10,17],center=true);
                 translate([33.75,36,1.75])
                     cube([12,10,16],center=true);
-                translate([35.75,36,-0.75])
-                    cube([16,10,11],center=true);
+                translate([37.75,36,-0.75])
+                    cube([20,10,11],center=true);
                 //connections to main cavity
                 translate([11.25,0,-9.25])
                     cube([12,82,20],center=true);
@@ -128,4 +132,4 @@ rotate([180,0,0]){
                 cube([32,57,1],center=true);
         };            
     };
-};
+//};

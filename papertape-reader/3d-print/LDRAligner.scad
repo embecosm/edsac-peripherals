@@ -8,7 +8,8 @@
 //work. If not, see <http://creativecommons.org/licenses/by-sa/4.0/>.
 
 difference(){
-    cube([9,44.5,1],center=true);
+    translate([0,3.81,0])
+        cube([9,52,1],center=true);
     cylinder(r=1.3, h=4, center=true, $fn=30);
     translate([0,7.62,0])
             cylinder(r=1.3, h=4, center=true, $fn=30);
@@ -17,6 +18,8 @@ difference(){
     translate([0,15.24,0])
             cylinder(r=1.3, h=4, center=true, $fn=30);
     translate([0,-15.24,0])
+            cylinder(r=1.3, h=4, center=true, $fn=30);
+    translate([0,22.86,0])
             cylinder(r=1.3, h=4, center=true, $fn=30);
     translate([4,0,0]){
             cylinder(r=1.3, h=4, center=true, $fn=30);
@@ -28,6 +31,8 @@ difference(){
                 cylinder(r=1.3, h=4, center=true, $fn=30);
         translate([0,-15.24,0])
                 cylinder(r=1.3, h=4, center=true, $fn=30);
+        translate([0,22.86,0])
+                cylinder(r=1.3, h=4, center=true, $fn=30);
     };
     translate([2,0,0]){
             cylinder(r=1.3, h=4, center=true, $fn=30);
@@ -38,6 +43,8 @@ difference(){
         translate([0,15.24,0])
                 cylinder(r=1.3, h=4, center=true, $fn=30);
         translate([0,-15.24,0])
+                cylinder(r=1.3, h=4, center=true, $fn=30);
+        translate([0,22.86,0])
                 cylinder(r=1.3, h=4, center=true, $fn=30);
     };
 };
