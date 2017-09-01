@@ -1,0 +1,66 @@
+// 4kHz with interupt
+
+#include <TimerOne.h>
+
+
+// Number of bits
+const int NUM_TX_BITS = 36;
+const int NUM_RX_BITS = NUM_TX_BITS * 2;
+
+// The time to wake up for
+const long int TIMING = 1000000L / 343 / NUM_RX_BITS /2;
+
+// Pins
+const uint8_t SPEAKER_PIN = 6;
+const uint8_t MICROPHONE_PIN = 5;
+
+// Arrays for information
+bool WRITE [NUM_TX_BITS + 1] = {1,0,1,0,0,1,1,0,0,0,1,0,0,1,0,1,0,0,1,1,0,1,0,1,1,1,0,1,0,0,1,1,0,0,0,1,0}; //ignore the first one
+int reading [3];
+bool mic_reading [NUM_RX_BITS];
+
+/ The next bits to process
+
+int nextRxBit;
+int nextTxBit;
+
+/*******************************************************/
+
+// converts 0s and 1s to repective pulse
+void sendVal(int value) {
+  if (value == 1) digitalWrite(SPEAKER_PIN, LOW);
+  else if (value == 0) digitalWrite(SPEAKER_PIN, HIGH);
+}
+
+// ISW wakes up at a variable time
+// Send the pulse
+// Read the microphone
+// Store in array
+void isr () {
+  // Buzzer output
+  sendVal(WRITE[nextTxBit]);
+  
+  // increment next bit
+  if (nextTxBit == (NUM_TX_BITS - 1))
+  {
+    nextTxBit = 0;
+  }
+  else nextTxBit++;
+}
+
+void setup() {
+  // initialise pins
+  pinMode(SPEAKER_PIN, OUTPUT);
+  pinMode(MICROPHONE_PIN, INPUT);
+
+  // Initialise states
+  nextTxBit = 0;
+  nextRxBit = 0;
+
+  // initialise timer
+  Timer1.initialize(TIMING);
+  Timer1.attachInterrupt(isr, TIMING);
+}
+
+// not needed
+void loop() {}
