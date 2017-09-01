@@ -149,6 +149,10 @@ void setup ()
   // NOTE: SOME PRINTERS NEED 9600 BAUD instead of 19200, check test page.
   mySerial.begin(19200);  // Initialize SoftwareSerial
   printer.begin();        // Init printer (same regardless of serial type)
+  printer.println("start"); // To indicate where the first order is
+  for (int x = 0; x < 24; x++){
+    printer.println(); //an empty line
+  }
 
 }
 
@@ -174,38 +178,14 @@ print6Holes (uint8_t val)
   for (int i = 0; i < 5; i++)
     data[i] = (val >> i & 1) == 1;
 
-
-  // Mark up the separator in the bitmap (4th column) and print it as the
-  // blank row.
-
-  int socket_off = HOLE_START + HOLE_OFF * 3 - ROW_DEPTH / 2;
-
-  for (int y = 0; y < ROW_DEPTH; y++)
+  // Print some blank lines after each order
+  for (int i = 0;i < ROW_DEPTH / 2; i++)
     {
-      uint8_t row[BITMAP_BYTES];	// Single line
-      memset (row, 0, BITMAP_BYTES);    // Clear all the bits
-
-      for (int x = 0; x < ROW_DEPTH; x++)
-	{
-	  // Bit position for the complete row
-
-	  int rowbit    = socket_off + x;
-	  int rowbyte   = rowbit / 8;
-	  int rowbitoff = 7 - rowbit % 8;
-
-	  // Bit postion for the image map
-
-	  int imgbit    = y * ROW_DEPTH + x;
-	  int imgbyte   = imgbit / 8;
-	  int imgbitoff = 7 - imgbit % 8;
-
-	  uint8_t imgval = (sprocket_map[imgbyte] >> imgbitoff) & 1;
-	  row[rowbyte] |= imgval << rowbitoff;
-	}
-
-      // Print the line
+      uint8_t row[BITMAP_BYTES];
+      memset (row, 0, BITMAP_BYTES);
       printer.printBitmap (PIXEL_WIDTH, 1, row, false);
     }
+    
 
   // Set up the data and print it out.
 
@@ -216,9 +196,9 @@ print6Holes (uint8_t val)
 
       for(int i = 0; i < 6; i++)
 	{
-	  // Allow for the sprocket hole in the 4th position
+	  // Allow for the sprocket hole in the 3rd position
 
-	  int  data_no = (i > 3) ? i - 1 : i;
+	  int  data_no = (i > 2) ? i - 1 : i;
 
 	  int x_off = HOLE_START + HOLE_OFF * i - ROW_DEPTH / 2;
 
@@ -236,9 +216,9 @@ print6Holes (uint8_t val)
 	      int imgbyte   = imgbit / 8;
 	      int imgbitoff = 7 - imgbit % 8;
 
-	      if (3 == i)
+	      if (2 == i)
 		{
-		  // Sprocket hole
+		  // Sprocket hole, in line
 
 		  uint8_t imgval = (sprocket_map[imgbyte] >> imgbitoff) & 1;
 		  row[rowbyte] |= imgval << rowbitoff;
