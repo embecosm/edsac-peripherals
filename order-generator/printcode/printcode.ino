@@ -141,8 +141,7 @@ static const uint8_t sprocket_map[IMAGE_BYTES] = {
 
 //! Standard setup code.
 
-void
-setup ()
+void setup ()
 {
   // Standard serial port, so we can communicate with a console.
   Serial.begin(9600);
