@@ -9,7 +9,7 @@ This uses the
 [Adafruit Thermal Printer library](https://github.com/adafruit/Adafruit-Thermal-Printer-Library). Clone
 this into your Arduino library directory:
 - On Linux: (home directory)/sketchbook/libraries
-- On Mac:: In (home directory)/Documents/Arduino/Libraries
+- On Mac:: In (home directory)/Documents/Arduino/libraries
 - On Windows:: My Documents\Arduino\libraries
 
 For example on Linux
