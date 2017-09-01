@@ -44,6 +44,7 @@ static const int SPROCKET_DIAM = 35;
 
 static const int PIXEL_WIDTH  = 384;
 static const int ROW_DEPTH    = HOLE_DIAM;
+static const int SPACER_DEPTH = ROW_DEPTH / 2;
 static const int BITMAP_BYTES = (PIXEL_WIDTH + 7) / 8;
 
 // Size of hole images
@@ -139,20 +140,35 @@ static const uint8_t sprocket_map[IMAGE_BYTES] = {
   0x00
 };
 
+
 //! Standard setup code.
+
+//! @Note Due to a bug in Wiring, GNU standard syntax will not work for this
+//!       function. The type has to be on the same line as the function name.
 
 void setup ()
 {
   // Standard serial port, so we can communicate with a console.
+
   Serial.begin(9600);
 
   // NOTE: SOME PRINTERS NEED 9600 BAUD instead of 19200, check test page.
+
   mySerial.begin(19200);  // Initialize SoftwareSerial
   printer.begin();        // Init printer (same regardless of serial type)
+
+  // A header to help the user
+
+  printer.justify('C');
   printer.println("start"); // To indicate where the first order is
-  for (int x = 0; x < 24; x++){
-    printer.println(); //an empty line
-  }
+  printer.justify('L');
+
+  // Blank paper to feed into the reader
+
+  for (int x = 0; x < 24; x++)
+    {
+      printer.println(); //an empty line
+    }
 
 }
 
@@ -167,25 +183,31 @@ void setup ()
 //! We have to print one bit row at a time because of the limited memory on
 //! the Uno.
 
+//! The encoding of bits within a byte, is that the leftmost bit on the page
+//! is the most significant bit in the byte.
+
 //! @param[in] val  Data to print
 
 static void
 print6Holes (uint8_t val)
 {
   // Break out the data
+
   bool data[5];
 
   for (int i = 0; i < 5; i++)
     data[i] = (val >> i & 1) == 1;
 
-  // Print some blank lines after each order
-  for (int i = 0;i < ROW_DEPTH / 2; i++)
-    {
-      uint8_t row[BITMAP_BYTES];
-      memset (row, 0, BITMAP_BYTES);
-      printer.printBitmap (PIXEL_WIDTH, 1, row, false);
-    }
-    
+  // A general vector for a row of bits.
+
+  uint8_t row[BITMAP_BYTES];
+
+  // Print some blank lines before each data row
+
+  memset (row, 0, BITMAP_BYTES);
+
+  for (int i = 0; i < SPACER_DEPTH; i++)
+    printer.printBitmap (PIXEL_WIDTH, 1, row, false);
 
   // Set up the data and print it out.
 
