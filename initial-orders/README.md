@@ -32,3 +32,29 @@ _Designs for 3D printed parts can be found in this repository\._
 * [4x M3x8 hex head bolt](uk.rs-online.com/web/p/socket-screws/4679789/)
 * [6x M3 nut](uk.rs-online.com/web/p/hex-nuts/1224400/)
 
+## Software
+
+### Prequisites
+
+This uses the
+[Adafruit Thermal Printer library](https://github.com/adafruit/Adafruit-MCP23017-Arduino-Library). Clone
+this into your Arduino library directory:
+- On Linux: (home directory)/sketchbook/libraries
+- On Mac:: In (home directory)/Documents/Arduino/libraries
+- On Windows:: My Documents\Arduino\libraries
+
+For example on Linux
+```
+cd ~/sketchbook/libraries
+git clone https://github.com/adafruit/Adafruit-MCP23017-Arduino-Library.git Adafruit_Thermal
+```
+You will need to restart the Arduino IDE after setting this up.
+
+### The program
+
+Load `initial-orders.ino` into the Arduino IDE and upload to the printer.
+
+To load in EDSACs initial orders before sending to the myStorm board.
+
+
+
