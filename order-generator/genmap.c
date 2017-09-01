@@ -68,9 +68,10 @@ main (int   argc,
 	  int rowbyte = rowbit / 8;
 	  int bit     = 7 - rowbit % 8;
 
-	  if ((x_off_sq + y_off_sq) < r_sq)
+	  if (((x_off_sq + y_off_sq) < r_sq)
+	      && (0 == ((x_off ^ y_off) % 2)))
 	    {
-	      // In circle - bit is black.
+	      // In circle and alternate - bit is black.
 	      pixmap[rowbyte] |= 1 << bit;
 	    }
 	  else
