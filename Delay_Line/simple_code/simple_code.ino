@@ -95,7 +95,8 @@ void loop() {
   if (reading_total > THRESHOLD) mic_reading[increment] = 0;  // higher than threshold
   else mic_reading[increment] = 1;                            // lower
 
-  //delay(CLK_TWO);
+  // so that the readings are in the middle of the pulse
+  delay(CLK_TWO);
   
   increment++;
 
