@@ -19,7 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <math.h>
 
-int sensorPin[05] = {A4,A3,A2,A1,A0}; //pins for the analog ins
+int clockline = A3
+int sensorPin[05] = {A5,A4,A2,A1,A0}; //pins for the analog ins
 int ledPin = 13;      // select the pin for the LED
 int sensorValue[20][05];
 int bits[05];
