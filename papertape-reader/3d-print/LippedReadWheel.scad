@@ -10,10 +10,10 @@
 difference(){
     union(){
         translate([0,0,-3.7])
-            cylinder(r=9, h=1, $fn=16, center=true);
+            cylinder(r=9.3, h=1, $fn=16, center=true);
         translate([0,0,3.7])
-            cylinder(r=9, h=1, $fn=16, center=true);
-        cylinder(r=8, h=8.4, $fn=16, center=true);
+            cylinder(r=9.3, h=1, $fn=16, center=true);
+        cylinder(r=8.3, h=8.4, $fn=16, center=true);
     };
     difference(){
         cylinder(r=1.85, h=14, $fn=60, center=true);
