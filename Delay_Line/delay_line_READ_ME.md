@@ -4,4 +4,6 @@ simple_code.ino is the code for the simple design. The code works and the CLK va
 
 interrupt_test.ino shows how the passive buzzer could be used. The problem with this design was that the microphone could not sense the sound waves fast enough.
 
+harder_code.ino combines the method in simple_code with the interrupt function. Code does not work.
+
 For more information please veiw the wiki page.
