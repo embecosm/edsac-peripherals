@@ -24,7 +24,7 @@ static const int NUM_BITS = 5;
 
 // How many value to aggregate
 
-static const int NUM_VALS = 20;
+static const int NUM_VALS = 10;
 
 // All the LED sensors
 
@@ -58,15 +58,18 @@ uint8_t sprocketState;
 
 static const int THRESHOLD = 20;
 
-//length of change measuring period
-int readtime = 40;
-//difference required over period to be cosidered significant
-int threshold = 20;
-//x value of old read
-int m = 10;
-double bitsValue[05];
-int response[20];
-int difference[05];
+// Debug counter
+
+static const int DBG_CNT = 250;
+
+struct
+{
+  int  current;
+  int  oldest;
+  int  gradient;
+} debugData[DBG_CNT];
+
+int debugCount;
 
 //! Standard setup
 
@@ -110,6 +113,12 @@ void setup()
   digitalWrite (readerLedPin, HIGH);
   digitalWrite (statusLedPin, LOW);
 
+  debugCount = 0;
+  Serial.println ("Get ready");
+  delay (2000);
+  Serial.println ("Go");
+  delay (500);
+
 }       // setup ()
 
 
@@ -119,20 +128,44 @@ void setup()
 
 void loop()
 {
+  delay (5);
+
   // Capture gradients
 
   int dataGradient[NUM_BITS];
   int sprocketGradient;
 
-  int oldestData = (nextData + NUM_VALS - 1) % NUM_VALS;
+  int oldestData = (nextData + 1) % NUM_VALS;
 
   // Get the sprocket and sensor values and calculate gradients
 
   sprocketValue[nextData] = analogRead (sprocketPin);
   sprocketGradient = sprocketValue[nextData] - sprocketValue[oldestData];
 
-  Serial.print ("Sprocket gradient: ");
-  Serial.println (sprocketGradient);
+  if (debugCount < DBG_CNT)
+    {
+      debugData[debugCount].current = sprocketValue[nextData];
+      debugData[debugCount].oldest = sprocketValue[oldestData];
+      debugData[debugCount].gradient = sprocketGradient;
+      debugCount++;
+    }
+  else if (debugCount == DBG_CNT)
+    {
+      Serial.println ("\"Current\",\"Oldest\",\"Gradient\"");
+
+      for (int i = 0; i < DBG_CNT; i++)
+        {
+          Serial.print ("\"");
+          Serial.print (debugData[i].current);
+          Serial.print ("\",\"");
+          Serial.print (debugData[i].oldest);
+          Serial.print ("\",\"");
+          Serial.print (debugData[i].gradient);
+          Serial.println ("\"");
+        }
+
+      debugCount++;
+    }
 
   for (int i = 0; i < NUM_BITS; i++)
     {
