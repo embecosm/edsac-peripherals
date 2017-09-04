@@ -4,6 +4,7 @@
 
 // Contributor: Peter Bennett <peter.bennett@embecosm.com>
 // Contributor: Dan Gorringe <dan.gorringe@embecosm.com>
+// Contributor: Jeremy Bennett <jeremy.bennett@embecosm.com>
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,17 +19,34 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
 // Build this program on your host machine, to create the declaration for an
 // image map of a black circle within a square.
 
 // These have to be constant static declarations, so they end up in Flash, not
 // RAM in the Arduino.
 
-// Takes three arguments in position order
+// Usage
 
-// - name of the map (C variable name)
-// - size of the square (pixels)
-// - diameter of the hole.
+//   genmap <varname> <square-size> <hole-diam> [ <fill-ratio> ]
+
+// varname
+
+//   name of the map (C variable name)
+
+// square-size
+
+//   size of the square (pixels)
+
+// hole-diam
+
+//   diameter of the hole.
+
+// fill-ratio
+
+//   gray ratio, 1 in <fill-ratio> black pixels will be white. An omitted
+//   value, or value less than 1  means no black pixels are white.  Note that
+//   a value of 1 will mean no pixels are printed at all!
 
 // Error checking is minimal.
 
@@ -42,24 +60,53 @@ int
 main (int   argc,
       char *argv[])
 {
-  char *varname = argv[1];
-  int  width = atoi (argv[2]);
-  int  diam = atoi (argv[3]);
-  int  r = diam / 2;
-  int  r_sq = r * r;
+  char *varname;
+  int  width;
+  int  diam;
+  int  fill_ratio = 0;
+  int  r;
+  int  r_sq;
 
   int  i, x, y;
-  uint8_t pixmap[50000];		// Just loads
+
+  uint8_t *pixmap;
   int map_bytes = (width * width + 7) / 8;
 
-  memset (pixmap, 0, map_bytes);     // Clear all the bits
+  // Get arguments
+
+  if ((argc < 4) || (argc > 5))
+    {
+      printf ("Usage: genmap <varname> <square-size> <hole-diam> [ <fill-ratio> ]\n");
+      exit (EXIT_FAILURE);
+    }
+
+  varname = argv[1];
+  width = atoi (argv[2]);
+  diam = atoi (argv[3]);
+
+  if (5 == argc)
+    fill_ratio = atoi (argv[4]);
+
+  if ((4 == argc) || (fill_ratio < 1))
+    fill_ratio = width * width;
+
+  // Compute derived values
+
+  r = diam / 2;
+  r_sq = r * r;
+  map_bytes = (width * width + 7) / 8;
+
+  // Set up and clear the pixmap
+
+  pixmap = malloc (width * width * sizeof (*pixmap));
+  memset (pixmap, 0, map_bytes);
 
   for (x = 0; x < width; x++)
     {
       int  x_off    = x - width / 2;
       int  x_off_sq = x_off * x_off;
 
-      for (int y = 0; y < width; y++)
+      for (y = 0; y < width; y++)
 	{
 	  int  y_off = y - width / 2;
 	  int  y_off_sq = y_off * y_off;
@@ -68,20 +115,24 @@ main (int   argc,
 	  int rowbyte = rowbit / 8;
 	  int bit     = 7 - rowbit % 8;
 
-	  if ((x_off_sq + y_off_sq) < r_sq)
+	  if (((x_off_sq + y_off_sq) < r_sq)
+	      && (0 != ((x + y) % fill_ratio)))
 	    {
-	      // In circle - bit is black.
+	      // In circle and filled - bit is black.
+
 	      pixmap[rowbyte] |= 1 << bit;
 	    }
 	  else
 	    {
-	      // Not in circle - bit is white
+	      // Not in circle or not filled - bit is white
+
 	      pixmap[rowbyte] &= ~(1 << bit);
 	    }
 	}
     }
 
-  printf ("static const uint8_t  %s[%d] = {", varname, map_bytes);
+  printf ("static const uint8_t  IMAGE_BYTES = %d;\n\n", map_bytes);
+  printf ("static const uint8_t  %s[IMAGE_BYTES] = {", varname);
 
   for (i = 0; i < map_bytes; i++)
     {
@@ -97,5 +148,5 @@ main (int   argc,
     }
 
   printf ("\n};\n");
-
+  free (pixmap);
 }

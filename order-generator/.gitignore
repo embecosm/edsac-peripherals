@@ -1,2 +1,4 @@
-# Ignore genmap binary
+# Ignore genmap binaries
 genmap
+*.o
+
