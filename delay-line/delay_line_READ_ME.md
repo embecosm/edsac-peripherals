@@ -1,9 +1,9 @@
-This is the folder for the current delay line prototype.
+Welcome to the delay line prototype folder.
 
-simple_code.ino is the code for the simple design. The code works and the CLK value can be changed to make the delay line faster or slower. If too fast the information sent will be lost.
+simple_code.ino is the code for a simple design. It sends a 36bit word through the tube where a logic 1 is a one second long 4kHz sine wave with a large amplitute and a logic 0 is silence for one second. 
 
-interrupt_test.ino shows how the passive buzzer could be used. The problem with this design was that the microphone could not sense the sound waves fast enough.
+The 4kHz signal can be recieved by the microphone (if the sensitivity is correct) and then it is smoothed using a capacitor and diode. The minimum delay depends on the rise/ fall time of this circuit.
 
-harder_code.ino combines the method in simple_code with the interrupt function. Code does not work.
+To interface to the FPGA two pins on the arduino should be used as TX and RX. The arduino should send a 72 bit word and, when the FPGA asks for the word, it should wait for the first bit of the word before sending anything.
 
 For more information please veiw the wiki page.
