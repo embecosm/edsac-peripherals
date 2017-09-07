@@ -6,4 +6,6 @@ The 4kHz signal can be recieved by the microphone (if the sensitivity is correct
 
 To interface to the FPGA two pins on the arduino should be used as TX and RX. When the FPGA asks for the word, the arduino should wait for the first bit of the word before sending anything.
 
-If you are struggleing to set the microphone sensitivity, connect a wire between two pins on the arduino and send the 36bit word bettween the pins.
+If you are struggleing to set the microphone sensitivity, connect a wire between two pins on the arduino and send the 36bit word between the pins.
+
+Any ideas for a better design are welcome.
