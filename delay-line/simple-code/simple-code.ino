@@ -1,4 +1,4 @@
-/* TCopyright (C) 2017  Embecosm Ltd
+/* Copyright (C) 2017  Embecosm Ltd
  * Contributor: Mary Bennett <mary.bennett@embecosm.com>
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
