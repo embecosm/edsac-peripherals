@@ -1,5 +1,13 @@
 2018-02-02  Jeremy Bennett  <jeremy.bennett@embecosm.com>
 
+	This is the definitive printer.  Actual programs are defined as
+	a string of EDSAC order mnemonics towards the top of the program.
+
+	* order-generator/printcode/printcode.ino: Generate EDSAC baudot
+	code, recognizing just the EDSAC input character set.
+
+2018-02-02  Jeremy Bennett  <jeremy.bennett@embecosm.com>
+
 	* order-generator/printcode/printcode.ino: Produce output in the
 	correct format - move sprocket hole one across.
 	* papertape-reader/signal-trace.ods: Final version.

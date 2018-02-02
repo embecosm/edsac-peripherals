@@ -1,9 +1,10 @@
 // Thermal binary printer
 
-// Copyright (C) 2017 Embecosm Limited <www.embecosm.com>
+// Copyright (C) 2017-18 Embecosm Limited <www.embecosm.com>
 
 // Contributor: Peter Bennett <peter.bennett@embecosm.com>
 // Contributor: Dan Gorringe <dan.gorringe@embecosm.com>
+// Contributor: Jeremy Bennett <jeremy.bennett@embecosm.com>
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -43,6 +44,11 @@ static const int SPROCKET_DIAM = 35;
 // Which is the sprocket hole
 
 static const int SPROCKET_HOLE = 3;
+
+//! How much leader space
+
+//static const int BLANK_LINES = 24;
+static const int BLANK_LINES = 6;
 
 // Size of bitmap
 
@@ -146,36 +152,179 @@ static const uint8_t sprocket_map[IMAGE_BYTES] = {
 };
 
 
-//! Standard setup code.
+// The program to print. Just enable one.
 
-//! @Note Due to a bug in Wiring, GNU standard syntax will not work for this
-//!       function. The type has to be on the same line as the function name.
+#if 1
 
-void setup ()
+// Bootloader
+
+char *progText =
+  "T0S"
+  "H2S"
+  "T0S"
+  "E6S"
+  "P1S"
+  "P5S"
+  "T0S"
+  "I0S"
+  "A0S"
+  "R16S"
+  "T0L"
+  "I2S"
+  "A2S"
+  "S5S"
+  "E21S"
+  "T3S"
+  "V1S"
+  "L8S"
+  "A2S"
+  "T1S"
+  "E11S"
+  "R4S"
+  "A1S"
+  "L0L"
+  "A0S"
+  "T31S"
+  "A25S"
+  "A4S"
+  "U25S"
+  "S31S"
+  "G6S";
+#endif
+
+//! Map from char code to binary representation
+
+struct ChMap
 {
-  // Standard serial port, so we can communicate with a console.
+  signed char    ch;                    //!< -1 means invalid
+  unsigned char  val;                   //!< 32 means invalid
+};
 
-  Serial.begin(9600);
+static const signed char   INVALID_CH  = -1;
+static const unsigned char INVALID_VAL = 32;
 
-  // NOTE: SOME PRINTERS NEED 9600 BAUD instead of 19200, check test page.
+//! Size of closed hash table giving char mappings.  We have 32 chars, 10
+//! digits, '+' and '-', so 44 entries.  Allow a bit spare to minimize misses,
+//! and make it a prime number
 
-  mySerial.begin(19200);  // Initialize SoftwareSerial
-  printer.begin();        // Init printer (same regardless of serial type)
+static const size_t  HASH_SIZE = 53;
 
-  // A header to help the user
+//! THe closed hash table
 
-  printer.justify('C');
-  printer.println("start"); // To indicate where the first order is
-  printer.justify('L');
+struct ChMap chMap [HASH_SIZE];
 
-  // Blank paper to feed into the reader
 
-  for (int x = 0; x < 24; x++)
+//! Compute the hash function
+
+static size_t
+hash (signed char  ch)
+{
+  return (((size_t) ch) << 2) % HASH_SIZE;
+
+}       // hash ()
+
+
+//! Function to add a value to the hash table
+
+static void
+addHash (signed char    ch,
+         unsigned char  val)
+{
+  size_t  hv = hash (ch);
+
+  while (INVALID_CH != chMap[hv].ch)
+    hv = (hv + 1) % HASH_SIZE;
+
+  chMap[hv].ch  = ch;
+  chMap[hv].val = val;
+
+}       // addHash ()
+
+
+//! Look up hash table
+
+//! @para[in] ch  Character to lookup
+
+static unsigned char
+lookup (signed char  ch)
+{
+  size_t  hv = hash (ch);
+
+  while ((ch != chMap[hv].ch) && (INVALID_CH != chMap[hv].ch))
+    hv = (hv + 1) % HASH_SIZE;
+
+  return chMap[hv].val;
+
+}       // lookup ()
+
+
+//! Function to initialize hash table
+
+static void
+initHash ()
+{
+  // Clear the table
+
+  for (size_t i = 0; i < HASH_SIZE; i++)
     {
-      printer.println(); //an empty line
+      chMap[i].ch  = INVALID_CH;
+      chMap[i].val = INVALID_VAL;
     }
 
-}
+  // Initialize the lookup.  First the chars - control chars follow the Martin
+  // Campbell-Kelly simulator substitution
+
+  addHash ('P', 0x10);
+  addHash ('Q', 0x11);
+  addHash ('W', 0x12);
+  addHash ('E', 0x13);
+  addHash ('R', 0x14);
+  addHash ('T', 0x15);
+  addHash ('Y', 0x16);
+  addHash ('U', 0x17);
+  addHash ('I', 0x18);
+  addHash ('O', 0x19);
+  addHash ('J', 0x1a);
+  addHash ('#', 0x1b);                   // Pi
+  addHash ('S', 0x1c);
+  addHash ('Z', 0x1d);
+  addHash ('K', 0x1e);
+  addHash ('*', 0x1f);                   // Erase
+  addHash ('.', 0x00);                   // Blank tape
+  addHash ('F', 0x01);
+  addHash ('@', 0x02);                   // Phi
+  addHash ('D', 0x03);
+  addHash ('!', 0x04);                   // Psi
+  addHash ('H', 0x05);
+  addHash ('N', 0x06);
+  addHash ('M', 0x07);
+  addHash ('&', 0x08);                   // Delta
+  addHash ('L', 0x09);
+  addHash ('X', 0x0a);
+  addHash ('G', 0x0b);
+  addHash ('A', 0x0c);
+  addHash ('B', 0x0d);
+  addHash ('C', 0x0e);
+  addHash ('V', 0x0f);
+
+  // Then digits and signs
+
+  addHash ('0', 0x10);
+  addHash ('1', 0x11);
+  addHash ('2', 0x12);
+  addHash ('3', 0x13);
+  addHash ('4', 0x14);
+  addHash ('5', 0x15);
+  addHash ('6', 0x16);
+  addHash ('7', 0x17);
+  addHash ('8', 0x18);
+  addHash ('9', 0x19);
+
+  addHash ('+', 0x05);
+  addHash ('-', 0x06);
+
+}       // initHash ()
+
 
 //! Print a 5 hole row.
 
@@ -275,53 +424,77 @@ print6Holes (uint8_t val)
 }       // print6Holes ();
 
 
+//! Standard setup code.
+
+//! @Note Due to a bug in Wiring, GNU standard syntax will not work for this
+//!       function. The type has to be on the same line as the function name.
+
+void setup ()
+{
+  // Standard serial port, so we can communicate with a console.
+
+  Serial.begin(9600);
+
+  // NOTE: SOME PRINTERS NEED 9600 BAUD instead of 19200, check test page.
+
+  mySerial.begin(19200);  // Initialize SoftwareSerial
+  printer.begin();        // Init printer (same regardless of serial type)
+
+  // Initialize the EDSAC hash table
+
+  initHash ();
+
+  Serial.print("Producing leader");
+
+  // A header to help the user
+
+  printer.justify('C');
+  printer.println("start"); // To indicate where the first order is
+  printer.justify('L');
+
+  // Blank paper to feed into the reader
+
+  for (int x = 0; x < BLANK_LINES; x++)
+    print6Holes (lookup (' '));               // Just sprocket holes
+
+  // Print the tape
+
+  for (int i = 0; progText[i] != 0; i++)
+    {
+      signed char ch = progText[i];
+      unsigned char val = lookup (ch);
+
+      if (INVALID_VAL == val)
+        {
+          Serial.print("Ignoring char: ");
+          Serial.println((char) ch);
+        }
+      else
+        {
+          Serial.print("Printing: ");
+          Serial.print((char) ch);
+          Serial.print(" = 0x");
+          Serial.println(val, HEX);
+
+          print6Holes(val);
+        }
+    }
+
+  Serial.print("Producing trailer");
+
+  // Blank paper tail
+
+  for (int x = 0; x < BLANK_LINES; x++)
+    print6Holes (lookup (' '));               // Just sprocket holes
+
+}
+
+
 //! Receive one 5-bit number over serial and print it.
 
 //! We accept ASCII digits, and print when we receive a non-digit.
 
 void loop() {
-
-  int   intVal = 0;
-  bool  doPrint = false;
-
-  while (!doPrint)
-    {
-      if (Serial.available () > 0)
-	{
-	  char ch = Serial.read ();
-
-	  // Print back for debugging
-
-	  Serial.print("IncomingByte is: ");
-	  Serial.println(ch);
-
-	  // If an ascii number increment the integer value
-
-	  if (('0' <= ch) && (ch <= '9'))
-	    {
-	      intVal = (intVal * 10) + (ch - '0');
-	      Serial.print ("Incrementing integer value to 0x");
-	      Serial.println(intVal, HEX);
-	    }
-	  else
-	    {
-	      // Non-digit triggers printing
-	      doPrint = true;
-	    }
-	}
-    }
-
-  // Print out the value
-
-  Serial.print("Printing: 0x");
-  Serial.print(intVal, HEX);
-
-  if (intVal > 31)
-    Serial.println (" (bottom 5 bits only)");
-  else
-    Serial.println ();
-
-  print6Holes(intVal);
 
 }	// loop ()
 
