@@ -40,6 +40,10 @@ static const int HOLE_OFF      = 61;	// Offset to next hole
 static const int HOLE_DIAM     = 50;
 static const int SPROCKET_DIAM = 35;
 
+// Which is the sprocket hole
+
+static const int SPROCKET_HOLE = 3;
+
 // Size of bitmap
 
 static const int PIXEL_WIDTH  = 384;
@@ -197,7 +201,7 @@ print6Holes (uint8_t val)
   bool data[5];
 
   for (int i = 0; i < 5; i++)
-    data[i] = (val >> i & 1) == 1;
+    data[i] = ((val >> i) & 1) == 1;
 
   // A general vector for a row of bits.
 
@@ -219,9 +223,9 @@ print6Holes (uint8_t val)
 
       for(int i = 0; i < 6; i++)
 	{
-	  // Allow for the sprocket hole in the 3rd position
+	  // Allow for the sprocket hole in the 2nd position
 
-	  int  data_no = (i > 2) ? i - 1 : i;
+	  int  data_no = (i > SPROCKET_HOLE) ? i - 1 : i;
 
 	  int x_off = HOLE_START + HOLE_OFF * i - ROW_DEPTH / 2;
 
@@ -239,7 +243,7 @@ print6Holes (uint8_t val)
 	      int imgbyte   = imgbit / 8;
 	      int imgbitoff = 7 - imgbit % 8;
 
-	      if (2 == i)
+	      if (SPROCKET_HOLE == i)
 		{
 		  // Sprocket hole, in line
 
