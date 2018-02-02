@@ -1,6 +1,8 @@
 /* The code to work the EDSAC simulating tape reader
 
-   Copyright (C) 2017  Embecosm Ltd
+   Copyright (C) 2017-2018  Embecosm Limited
+
+   Contributor: Jeremy Bennett <jeremy.bennett@embecosm.com>
    Contributor: Peter Bennett <peter.bennett@embecosm.com>
 
    This program is free software: you can redistribute it and/or modify it
@@ -18,82 +20,150 @@
 
 #include <math.h>
 
-// Number of sensors
+//! Inverse exponential smoothing factor.  Using the inverse allows us to keep
+//! arithmetic integer.
 
-static const int NUM_BITS = 5;
+static const int INV_SMOOTH = 5;
 
-// All the LED sensors
+//! Number of data sensors
 
-static const int sensorPin[NUM_BITS] = {
-  A5, A4, A3, A1, A0 };
-static const int sprocketPin = A2;
+static const int NUM_SENSORS = 6;
 
-// All 6 reader LEDs are driven off the same pin.
+//! All the data sensors
 
-static const int readerLedPin = 13;      // select the pin for the LED
+static const int SENSOR_PIN[NUM_SENSORS] = {
+  A5, A4, A3, A2, A1, A0 };
 
-// Add a LED to tell us we are alive!
+//! The sprocket sensor (A3)
 
-static const int statusLedPin = 12;
+static const int SPROCKET_PIN = 2;
 
-// Number of values to average forwards and backwards.
+//! All 6 reader LEDs are driven off the same pin.
 
-static const int NUM_VALS = 5;
+static const int READER_LED_PIN = 13;      // select the pin for the LED
 
-// Number of samples to aggregate to be able to compute a central second
-// derivative. We smooth NUM_VALS each side of the raw data to get the
-// derivative. No further smoothing after that.
+//! A LED to tell us we are alive!
 
-static const int NUM_SAMPLES = NUM_VALS * 2 + 1;
+static const int STATUS_LED_PIN = 12;
 
-// Structure of a sensor value
+//! A heuristic to determine if we have a strong enough signal for the
+//! sprocket.  We only recognize a minimum if the slope has got below this
+//! value before crossing zero.
 
-struct sensorData
+static const int DXDT_HEUR_SPROCKET = -30;
+
+//! A heuristic to determine if we have a strong enough signal for the
+//! data.  We only recognize a minimum if the slope has got below this
+//! value before crossing zero.
+
+static const int DXDT_HEUR_DATA = -50;
+
+//! Type for data. Signed, because when used for derivatives these may be
+//! negative.
+
+struct PtData
 {
-  int vals[NUM_SAMPLES];
-  int gradients[NUM_SAMPLES];
-  int gradient2;
-  int gradient2prev;
+  int val[NUM_SENSORS];           // Data values
 };
 
-// Record of sensor and sprocket values
+//! We use backward differences, so need 2 data points for dx/dt and
+//! d2x/dt2. 2 element circular buffers with a pointer are appropriate
 
-struct sensorData  dataInfo[NUM_BITS];
-struct sensorData  sprocketInfo;
+//! Raw data is in the range 0 - 1023.  We multiply by 10 to give more bits
+//! for the exponential smoothing, while remaining an integer < 32768.
 
-// Which is the next set of data to be collected (range 0 to NUM_SAMPLES - 1)
+struct {
+  struct PtData x[2];
+  struct PtData dxdt[2];
+  struct PtData minDxdt;
+  unsigned int curr;
+} data;
 
-static int nextData;
-
-// True if we are in a sprocket hole
-
-static bool sprocketState;
-
-// Threshold for sprocket state change. First derivative must be more than
-// this.
-
-static const int SPROCKET_THRESHOLD = 20;
-
-// State of pins. True if we are in a hole
-
-static bool sensorState[NUM_BITS];
-
-// Threshold for sensor state change. First derivative must be more than
-// this.
-
-static const int SENSOR_THRESHOLD = 20;
-
-// The data we read;
-
-static uint8_t data;
-
-// Maximum abount of debug
-
-static const int DBG_MAX = 1500;
-
-// Debug counter
+//! Debug counter
 
 int dbgCnt;
+
+//! Debug max
+
+static const int DBG_MAX = 0;
+
+
+//! Get first set of data
+
+//! Smoothing is best if the first data point is just read.
+
+static void
+initData ()
+{
+  int prev = data.curr;
+  int curr = 1 - prev;
+
+  // Get initial sensor value
+
+  for (size_t i = 0; i < NUM_SENSORS; i++)
+    data.x[curr].val[i] = analogRead (SENSOR_PIN[i]) * 10;
+
+  // Rotate the circular buffer
+
+  data.curr = curr;
+
+}       // initData ()
+
+
+//! Get another set of data
+
+//! We compute the derivatve and the minimum derivative values.
+
+static void
+updateData ()
+{
+  int prev = data.curr;
+  int curr = 1 - prev;
+
+  // Process each sensor in turn
+
+  for (size_t i = 0; i < NUM_SENSORS; i++)
+    {
+      // Read and smooth the data
+
+      int  newVal = analogRead (SENSOR_PIN[i]);
+      int  oldVal = data.x[prev].val[i];
+
+      data.x[curr].val[i] =
+        (oldVal * (INV_SMOOTH - 1) + newVal * 10) / INV_SMOOTH;
+
+      // dx/dt and its minimum recorded value
+
+      data.dxdt[curr].val[i] = data.x[curr].val[i] - data.x[prev].val[i];
+      data.minDxdt.val[i] = min (data.minDxdt.val[i], data.dxdt[curr].val[i]);
+
+      if ((dbgCnt < DBG_MAX))
+        {
+          Serial.print (newVal, DEC);
+          Serial.print (",");
+          Serial.print (data.x[curr].val[i], DEC);
+          Serial.print (",");
+          Serial.print (data.dxdt[curr].val[i], DEC);
+          Serial.print (",");
+          Serial.print (data.minDxdt.val[i], DEC);
+
+          if (i < (NUM_SENSORS - 1))
+            Serial.print (",");
+        }
+    }
+
+  if (dbgCnt < DBG_MAX)
+    {
+      Serial.println ("");
+      dbgCnt++;
+    }
+
+  // Rotate the circular buffer
+
+  data.curr = curr;
+
+}       // updateData ()
+
 
 //! Standard setup
 
@@ -103,8 +173,8 @@ void setup()
 {
   // declare the various LED pins as outputs:
 
-  pinMode(readerLedPin, OUTPUT);
-  pinMode(statusLedPin, OUTPUT);
+  pinMode(READER_LED_PIN, OUTPUT);
+  pinMode(STATUS_LED_PIN, OUTPUT);
 
   // Make sure we can talk to the serial monitor
 
@@ -113,78 +183,22 @@ void setup()
   // Debug setup
 
   dbgCnt = 0;
+
   Serial.println ("Get ready");
   delay (2000);
 
   // Turn on the LEDs and allow resistors to respond.
 
-  digitalWrite (readerLedPin, HIGH);
-  digitalWrite (statusLedPin, LOW);
+  digitalWrite (READER_LED_PIN, HIGH);
+  digitalWrite (STATUS_LED_PIN, LOW);
   delay (500);
 
-  // Populate our initial data.  Need to do this twice to ensure the first
-  // derivative values are meaningful.
+  // Populate our initial data.  A second set of data is needed to ensure the
+  // first derivative values are meaningful, but this will be at the start of
+  // the main loop.
 
-  nextData = 0;
-
-  do
-    {
-      sprocketInfo.vals[nextData] = analogRead (sprocketPin);
-
-      for (int i = 0; i < NUM_BITS; i++)
-        dataInfo[i].vals[nextData] = analogRead (sensorPin[i]);
-
-      nextData = (nextData + 1) % NUM_SAMPLES;
-    }
-  while (nextData != 0);
-
-  // Second time round, populate the gradients
-
-  do
-    {
-      int tot = 0;
-      int nextGrad = (nextData - NUM_VALS + 1 + NUM_SAMPLES) % NUM_SAMPLES;
-
-      sprocketInfo.vals[nextData] = analogRead (sprocketPin);
-
-      for (int j = nextGrad - NUM_VALS; j < nextGrad; j++)
-        {
-          int prev = (j + NUM_SAMPLES) % NUM_SAMPLES;
-          int curr = (j + NUM_VALS) % NUM_SAMPLES;
-          tot += sprocketInfo.vals[curr] - sprocketInfo.vals[prev];
-        }
-
-      sprocketInfo.gradients[nextGrad] = tot;
-
-      for (int i = 0; i < NUM_BITS; i++)
-        {
-          tot = 0;
-          dataInfo[i].vals[nextData] = analogRead (sensorPin[i]);
-
-          for (int j = nextGrad - NUM_VALS; j < nextGrad; j++)
-            {
-              int prev = (j + NUM_SAMPLES) % NUM_SAMPLES;
-              int curr = (j + NUM_VALS) % NUM_SAMPLES;
-              tot += dataInfo[i].vals[curr] - dataInfo[i].vals[prev];
-            }
-
-          dataInfo[i].gradients[nextGrad] = tot;
-        }
-
-      nextData = (nextData + 1) % NUM_VALS;
-    }
-  while (nextData != 0);
-
-  // Assume not in sprocket hole or data hole
-
-  sprocketState = false;
-
-  for (int i = 0; i < NUM_BITS; i++)
-    sensorState[i] = false;
-
-  // No data read yet
-
-  data = 0;
+  data.curr = 0;
+  initData ();
 
   Serial.println ("Go");
   delay (500);
@@ -203,131 +217,68 @@ void setup()
 //! holes in the paper tape are represented as dark spots, this means minima
 //! correspond to holes.
 
-//! We calculate mid-point central first and second derivatives for the current
-//! reading of the sprocket hole. When the second deriviative is zero, we
-//! treat this as the edge of a sprocket hole. If the first derivative is
-//! positive we are approaching a minimum (i.e. entering the sprocket hole)
-//! and if it is negative we are approaching a maximum (i.e. leaving the
-//! sprocket hole).
+//! We find the center point of the sprocket hole when the following is true.
+//! 1. the first derivative of the sprocket hole has crossed zero from
+//!    negative to non-negative (including zero).  This means it is a minimum,
+//!    not a maximum.
+//! 2. the first derivative of the sprocket hole has gone below
+//!    DXDT_HEUR_SPROCKET since last being positive.  This allows us to ignore
+//!    noise before the tape starts.
 
-//! During the
+//! Once we have the center of the sprocket hole, we look at all the data
+//! holes. We have a data hole if the first derivative of the data hole has
+//! gone below DXDT_HEUR_DATA since last being positive.
 
 //! @note Don't go for GNU style declaration here - it breaks Arduino
 
 void loop()
 {
+  // Wait, so we don't go too fast and then turn off the status light (in case
+  // it was on) and update the data.
+
   delay (5);
+  digitalWrite (STATUS_LED_PIN, LOW);
+  updateData ();
 
-  // Capture data and compute second derivatives
+  // Have we found the center of a sprocket hole? If so reset minDxdt value
+  // and capture the data value.
 
-  int nextGrad = (nextData - NUM_VALS + 1 + NUM_SAMPLES) % NUM_SAMPLES;
-  int prevGrad = (nextGrad - 1 + NUM_SAMPLES) % NUM_SAMPLES;
-  int tot = 0;
+  int  curr = data.curr;
+  int  prev = 1 - data.curr;
 
-  sprocketInfo.vals[nextData] = analogRead (sprocketPin);
-
-  for (int j = nextGrad - NUM_VALS; j < nextGrad; j++)
+  if ((data.dxdt[prev].val[SPROCKET_PIN] < 0)
+      && (data.dxdt[curr].val[SPROCKET_PIN] >= 0))
     {
-      int prev = (j + NUM_SAMPLES) % NUM_SAMPLES;
-      int curr = (j + NUM_VALS) % NUM_SAMPLES;
-      tot += sprocketInfo.vals[curr] - sprocketInfo.vals[prev];
+      // A real sprocket hole if we had had enough slope
+
+      if (data.minDxdt.val[SPROCKET_PIN] < DXDT_HEUR_SPROCKET)
+        {
+          // Holes are LSB to MSB.  Build up value. Don't use an unsigned
+          // index for counting backwards (always >= 0).
+
+          unsigned char  res = 0;
+
+          for (int i = (NUM_SENSORS - 1); i >= 0; i--)
+            if (SPROCKET_PIN != i)
+              {
+                res = res << 1;
+                res |= (data.minDxdt.val[i] < DXDT_HEUR_DATA) ? 1 : 0;
+              }
+
+          // Log the output and flash the light
+
+          Serial.print ("Hex: ");
+          Serial.println (res, HEX);
+          digitalWrite (STATUS_LED_PIN, HIGH);
+        }
+
+      // Always reset all minima at a crossing (do this after the test above
+      // of course)
+
+      for (int i = (NUM_SENSORS - 1); i >= 0; i--)
+        data.minDxdt.val[i] = 0;            // Reset
     }
-
-  sprocketInfo.gradients[nextGrad] = tot;
-  sprocketInfo.gradient2prev = sprocketInfo.gradient2;
-  sprocketInfo.gradient2     = tot - sprocketInfo.gradients[prevGrad];
-
-  // Second derivative tells us when we crossed a sprocket edge. Because we
-  // may not get lucky with hitting zero, we look to see if we have changed
-  // sign.
-
-  // We look that we have a large enough first derivative to be sure this is a
-  // serious crossing, rather than just noise when there is no signal.
-
-  // We also can only enter if we are not already in and vice versa!
-
-  if ((sprocketInfo.gradient2 * sprocketInfo.gradient2prev) <= 0)
-    {
-      if (!sprocketState
-          && (sprocketInfo.gradients[nextGrad] < -SPROCKET_THRESHOLD))
-        {
-          // Entering a sprocket
-
-          sprocketState = true;
-          //Serial.println ("In");
-
-          // If we have any data pin driving, accept it.
-
-          for (int i = 0; i < NUM_BITS; i++)
-            if (sensorState[i])
-              data |= 1 << i;
-        }
-      else if (sprocketState
-               && (sprocketInfo.gradients[nextGrad] > SPROCKET_THRESHOLD))
-        {
-          // Leaving a sprocket
-
-          sprocketState = false;
-          //Serial.println ("Out");
-
-          // Record the data
-
-          Serial.println (data, HEX);
-          data = 0;
-        }
-    }
-
-  for (int i = 0; i < NUM_BITS; i++)
-    {
-      tot = 0;
-      dataInfo[i].vals[nextData] = analogRead (sensorPin[i]);
-
-      for (int j = nextGrad - NUM_VALS; j < nextGrad; j++)
-        {
-          int prev = (j + NUM_SAMPLES) % NUM_SAMPLES;
-          int curr = (j + NUM_VALS) % NUM_SAMPLES;
-          tot += dataInfo[i].vals[curr] - dataInfo[i].vals[prev];
-        }
-
-      dataInfo[i].gradients[nextGrad] = tot;
-      dataInfo[i].gradient2prev = dataInfo[i].gradient2;
-      dataInfo[i].gradient2     = tot - dataInfo[i].gradients[prevGrad];
-
-      // Recognize edges using second derivatives again.
-
-      if ((dataInfo[i].gradient2 * dataInfo[i].gradient2prev) <= 0)
-        {
-          if (!sensorState[i]
-              && (dataInfo[i].gradients[nextGrad] < -SPROCKET_THRESHOLD))
-            {
-              // Entering a hole
-
-              sensorState[i] = true;
-              //Serial.print ("In ");
-              //Serial.println (i);
-
-              // If we are in a sprocket hole, mark this as data.
-
-              if (sprocketState)
-                data |= 1 << i;
-
-            }
-          else if (sensorState[i]
-                   && (dataInfo[i].gradients[nextGrad] > SPROCKET_THRESHOLD))
-            {
-              // Leaving a hole
-
-              sensorState[i] = false;
-              //Serial.print ("Out ");
-              //Serial.println (i);
-            }
-        }
-    }
-
-  // And ready for the next data
-
-  nextData = (nextData + 1) % NUM_SAMPLES;
-}
+}       // loop ()
 
 
 // Local Variables:

@@ -1,0 +1,15 @@
+2018-02-02  Jeremy Bennett  <jeremy.bennett@embecosm.com>
+
+	This is the fully working reader of paper tape.  A full data log
+	is included for tutuorial purposes.
+
+	At present this reads as plain 5 bit binary.  Future work will add
+	correct EDSAC modified baudot decoding.
+
+	A ChangeLog is added now there is significant updating to software
+	in progress.
+
+	* ChangeLog: Created.
+	* papertape-reader/code/reader/reader.ino: Rewritten for a simpler
+	analysis and using the correct line as sprocket.
+	* papertape-reader/signal-trace.ods: Created.
