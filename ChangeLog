@@ -1,3 +1,20 @@
+2018-02-04  Jeremy Bennett  <jeremy.bennett@embecosm.com>
+
+	This is the definitive paper tape reader as demonstrated at FOSDEM
+	2018.  Content is now recognized as EDSAC modified Baudot code
+	used for input (note, not the same as the representation for
+	output).
+
+	* order-generator/printcode/printcode.ino (void setup): Correctly
+	place the leader message.
+	* papertape-reader/code/reader/reader.ino (SPROCKET_PIN): Move
+	sprocket pin to be A2.
+	(seekingOrder, struct ChMap, hash, addHash, lookupOrder)
+	(lookupNum, initHash): Created.
+	(setup): Call initHash, intialize seekingOrder state
+	(loop): Interpret input as EDSAC order codes, printing each
+	completed code.
+
 2018-02-02  Jeremy Bennett  <jeremy.bennett@embecosm.com>
 
 	This is the definitive printer.  Actual programs are defined as

@@ -444,9 +444,9 @@ void setup ()
 
   initHash ();
 
-  Serial.print("Producing leader");
-
   // A header to help the user
+
+  Serial.print("Producing leader");
 
   printer.justify('C');
   printer.println("start"); // To indicate where the first order is
