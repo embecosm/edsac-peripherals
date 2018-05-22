@@ -1,34 +1,30 @@
 Welcome to the delay line prototype folder.
 ---
 
-simple_code.ino is the code for a simple design. It sends a 36bit word through the tube where a logic 1 is a one second long 4kHz sine wave with a large amplitute and a logic 0 is silence for one second. 
+The ouput circuit is connected between pin PD3 and ground. It uses two resistors to impedance match to the arduino.
 
-The 4kHz signal can be recieved by the microphone (if the sensitivity is correct) and then it is smoothed using a capacitor and diode. The minimum delay depends on the rise/ fall time of this circuit.
-
-To interface to the FPGA two pins on the arduino should be used as TX and RX. When the FPGA asks for the word, the arduino should wait for the first bit of the word before sending anything.
-
-If you are struggleing to set the microphone sensitivity, connect a wire between two pins on the arduino and send the 36bit word between the pins.
+The input circuit is connected between pin PD3, five volts and ground. The first part of the circuit is impedance matching to the microphone. Second is the basic LM386 circuit. Connecting the two is a trim pot to control the sensitivity of the microphone.
 
 Any ideas for a better design are welcome.
 
 Bill of materials
 ---
 
-* Microphone circuit
-* Active buzzer circuit
-* 100nF capacitor
-* Diode
-* Arduino uno/ Cuttlefish
-* Pipe
-* Foam
+* Microphone (KEEG1538WB-100LB)
+* Speaker
+* 1k ohm resistor.
+* 10k ohm resistor.
+* 10k ohm trim potentiometer.
+* 0.1uF capacitor.
+* 2x 10uF capacitor.
+* 100uF capacitor.
+* 0.047uF capacitor.
+* LM386 audio amplifier.
+* 1 meter long plastic pipe.
+* Acoustic foam.
+* Small screwdriver to change the trim potentiometers sensitivity.
 
 Software
 ---
 
-To run the basic program, download *simple_code.ino* and upload to arduino. This will send a 36 bit word around the tube.
-
-Once a serial connection between the arduino and FPGA has been set up;
-* Change the arduino program so that the FPGA can send the set 36 bit word around the tube.
-* Have the FPGA send a starting word to the arduino.
-* Have the FPGA request and recieve the current arduino word.
-* Have the FPGA request and recieve a section of the current arduino word.
+To run the basic program, download *delay_line.ino* and upload to arduino. This will store a 10 bit word in the tube.
